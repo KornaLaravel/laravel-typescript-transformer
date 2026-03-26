@@ -146,11 +146,9 @@ class ResolveLaravelControllerMethodAction
         $class = $node->type->reference->classString;
 
         $isCollection = is_a($class, Collection::class, true)
-            || in_array($class, [
-                DataCollection::class,
-                PaginatedDataCollection::class,
-                CursorPaginatedDataCollection::class,
-            ]);
+            || is_a($class, DataCollection::class, true)
+            || is_a($class, PaginatedDataCollection::class, true)
+            || is_a($class, CursorPaginatedDataCollection::class, true);
 
         if (! $isCollection) {
             return false;

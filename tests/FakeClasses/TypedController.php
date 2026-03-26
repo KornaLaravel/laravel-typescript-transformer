@@ -3,6 +3,8 @@
 namespace Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses;
 
 use Illuminate\Http\Response;
+use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
@@ -71,6 +73,24 @@ class TypedController
     public function returnsDataCollectionOfDataObjects(): DataCollection
     {
         return new DataCollection(FakeData::class, []);
+    }
+
+    /** @return CustomDataColletion<int, FakeData> */
+    public function returnsCustomDataCollectionOfDataObjects(): DataCollection
+    {
+        return new CustomDataColletion(FakeData::class, []);
+    }
+
+    /** @return CustomPaginatedDataCollection<int, FakeData> */
+    public function returnsCustomPaginatedDataCollectionOfDataObjects(): CustomPaginatedDataCollection
+    {
+        return new CustomPaginatedDataCollection(FakeData::class, new Paginator([], 10));
+    }
+
+    /** @return CustomCursorPaginatedDataCollection<int, FakeData> */
+    public function returnsCustomCursorPaginatedDataCollectionOfDataObjects(): CustomCursorPaginatedDataCollection
+    {
+        return new CustomCursorPaginatedDataCollection(FakeData::class, new CursorPaginator([], 10));
     }
 
     /** @return Response<FakeData> */

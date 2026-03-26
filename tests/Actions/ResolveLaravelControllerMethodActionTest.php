@@ -3,6 +3,9 @@
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelTypeScriptTransformer\Actions\ResolveLaravelControllerMethodAction;
+use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomCursorPaginatedDataCollection;
+use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomDataColletion;
+use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomPaginatedDataCollection;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\FakeData;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\TypedController;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpClassNode;
@@ -58,6 +61,18 @@ it('resolves response types', function (string $method, mixed $expected) {
     )],
     'data collection of data objects' => ['returnsDataCollectionOfDataObjects', new TypeScriptGeneric(
         TypeScriptReference::referencingPhpClass(DataCollection::class),
+        [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
+    )],
+    'custom data collection of data objects' => ['returnsCustomDataCollectionOfDataObjects', new TypeScriptGeneric(
+        TypeScriptReference::referencingPhpClass(CustomDataColletion::class),
+        [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
+    )],
+    'custom paginated collection of data objects' => ['returnsCustomPaginatedDataCollectionOfDataObjects', new TypeScriptGeneric(
+        TypeScriptReference::referencingPhpClass(CustomPaginatedDataCollection::class),
+        [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
+    )],
+    'custom cursor paginated collection of data objects' => ['returnsCustomCursorPaginatedDataCollectionOfDataObjects', new TypeScriptGeneric(
+        TypeScriptReference::referencingPhpClass(CustomCursorPaginatedDataCollection::class),
         [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
     )],
     'response wrapping data object unwraps' => [

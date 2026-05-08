@@ -124,7 +124,7 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
         }
 
         if (is_string($value) && is_subclass_of($value, NameMapper::class)) {
-            return app($value)->map($propertyName);
+            return (new $value())->map($propertyName);
         }
 
         return $value;

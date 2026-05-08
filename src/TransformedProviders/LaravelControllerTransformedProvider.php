@@ -148,13 +148,13 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
             return [];
         }
 
-        $actionCallExpressions = [];
+        $actionCallNodes = [];
         $actionTypeAliases = [];
 
         foreach ($controller->routeController->actions as $action) {
             $types = $this->resolveControllerMethod($controller, $action->methodName);
 
-            $actionCallExpressions[$action->methodName] = $this->buildActionCallExpression($action);
+            $actionCallNodes[$action->methodName] = $this->buildActionCallNode($action);
 
             $actionTypeAliases[$action->methodName] = [
                 TypeScriptOperator::export(new TypeScriptAlias('Request', $types['request'] ?? new TypeScriptObject([]))),
@@ -162,14 +162,14 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
             ];
         }
 
-        if ($controller->routeController->invokable && (! array_key_exists('__invoke', $actionCallExpressions) || ! array_key_exists('__invoke', $actionTypeAliases))) {
+        if ($controller->routeController->invokable && (! array_key_exists('__invoke', $actionCallNodes) || ! array_key_exists('__invoke', $actionTypeAliases))) {
             return [];
         }
 
-        $constNode = $controller->routeController->invokable ? $actionCallExpressions['__invoke'] : TypeScriptOperator::as(
+        $constNode = $controller->routeController->invokable ? $actionCallNodes['__invoke'] : TypeScriptOperator::as(
             new TypeScriptObject(array_map(
-                fn (string $methodName) => new TypeScriptProperty($methodName, $actionCallExpressions[$methodName]),
-                array_keys($actionCallExpressions),
+                fn (string $methodName) => new TypeScriptProperty($methodName, $actionCallNodes[$methodName]),
+                array_keys($actionCallNodes),
             )),
             new TypeScriptIdentifier('const'),
         );
@@ -229,7 +229,7 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
         return $controller->methods[$methodName] = $result;
     }
 
-    protected function buildActionCallExpression(RouteControllerAction $action): TypeScriptCallExpression
+    protected function buildActionCallNode(RouteControllerAction $action): TypeScriptNode
     {
         $methodPriorities = [
             'get' => 0,

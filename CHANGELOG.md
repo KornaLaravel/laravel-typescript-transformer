@@ -2,6 +2,61 @@
 
 All notable changes to `typescript-transformer` will be documented in this file
 
+## 3.1.0 - 2026-05-08
+
+A round of bug fixes for route generation, laravel-data integration, and the writer.
+
+### Honor laravel-data `name_mapping_strategy.output` config (#81)
+
+If your `config/data.php` looked like this:
+
+```php
+'name_mapping_strategy' => [
+    'output' => SnakeCaseMapper::class,
+],
+
+```
+The transformer was silently ignoring it and emitting camelCase keys. The processor now resolves property output names through `DataConfig::getDataClass()`, so the global mapper, class level, and property level `MapName` / `MapOutputName` attributes all flow through one source. Thanks @rubenvanassche.
+
+### Fix `route()` helper producing `//` for the root route (#82)
+
+`Route::get('/')` produced `route('home') === '//'` because Laravel's `$route->uri` returns `/` for the root and bare paths (without a leading slash) for everything else. The runtime helper then prepended another `/`. After this fix:
+
+```ts
+route('home');         // '/'  (was '//')
+route('help.index');   // '/help' (unchanged)
+
+```
+Thanks @rubenvanassche.
+
+### Fix null byte crash in the route watcher when using filters (#80)
+
+Watching routes with any `RouteFilter` configured crashed with `Command array element 4 contains a null byte`. PHP's `serialize()` emits `\0*\0` markers for protected properties, and Symfony Process rejects command arguments that contain null bytes. Every shipped filter (`NamedRouteFilter`, `ControllerRouteFilter`, `ClosureRouteFilter`) hit this. The serialized payload is now base64 encoded across the process boundary. Thanks @rubenvanassche.
+
+### Support custom data collections in controller types (#73)
+
+Controller type generation now uses `is_a()` instead of `in_array()` when checking for data collection classes, so subclasses of `DataCollection` are recognised. `buildActionCallExpression` was also renamed to `buildActionCallNode` to make it overridable. Thanks @iamrgroot.
+
+### Fix `GlobalNamespaceWriter` producing a broken path when given an absolute path (#79)
+
+Passing an absolute path resulted in the output directory being concatenated in front of it:
+
+```
+resources/js/generated/home/user/project/resources/types/generated.d.ts
+
+```
+Pass a relative filename instead, and the writer will resolve it correctly against the configured output directory. Thanks @A909M.
+
+### What's Changed
+
+* Fix null-byte crash in route watcher when using filters by @rubenvanassche in https://github.com/spatie/laravel-typescript-transformer/pull/80
+* Honor laravel-data `name_mapping_strategy.output` config by @rubenvanassche in https://github.com/spatie/laravel-typescript-transformer/pull/81
+* Fix `route()` helper producing `//` for the root route by @rubenvanassche in https://github.com/spatie/laravel-typescript-transformer/pull/82
+* Support custom data collections in controller types by @iamrgroot in https://github.com/spatie/laravel-typescript-transformer/pull/73
+* Fix `GlobalNamespaceWriter` producing a broken path when given an absolute path by @A909M in https://github.com/spatie/laravel-typescript-transformer/pull/79
+
+**Full Changelog**: https://github.com/spatie/laravel-typescript-transformer/compare/3.0.3...3.0.4
+
 ## 3.0.3 - 2026-03-17
 
 ### What's Changed

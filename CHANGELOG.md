@@ -2,6 +2,20 @@
 
 All notable changes to `typescript-transformer` will be documented in this file
 
+## 3.2.0 - 2026-05-08
+
+### Narrow the controller `method` type and prioritize HTTP methods (#83)
+
+Fixes #76. The generated `RouteDefinition` and `MethodRoute` types previously declared `method: string`, which forced casts when handing the result to libraries like Inertia that expect `'get' | 'post' | 'put' | 'patch' | 'delete'`. The output now uses a literal union, so:
+
+```ts
+router.visit(SomeController.update(), { data: { ... } });
+
+```
+just works. On top of that, `LaravelControllerTransformedProvider` accepts a new `httpMethodsPriority` argument that doubles as both filter and sort order. Methods absent from the list are dropped from the output, and the ones that survive are emitted in list order. The default is `['get', 'post', 'put', 'patch', 'delete']`, so HEAD and OPTIONS (auto-registered by Laravel for every GET route, never invoked by SPAs) are no longer emitted.
+
+If you actually relied on the HEAD entries, pass a custom list including `'head'`. Thanks @rubenvanassche.
+
 ## 3.1.0 - 2026-05-08
 
 A round of bug fixes for route generation, laravel-data integration, and the writer.
@@ -15,6 +29,7 @@ If your `config/data.php` looked like this:
     'output' => SnakeCaseMapper::class,
 ],
 
+
 ```
 The transformer was silently ignoring it and emitting camelCase keys. The processor now resolves property output names through `DataConfig::getDataClass()`, so the global mapper, class level, and property level `MapName` / `MapOutputName` attributes all flow through one source. Thanks @rubenvanassche.
 
@@ -25,6 +40,7 @@ The transformer was silently ignoring it and emitting camelCase keys. The proces
 ```ts
 route('home');         // '/'  (was '//')
 route('help.index');   // '/help' (unchanged)
+
 
 ```
 Thanks @rubenvanassche.
@@ -43,6 +59,7 @@ Passing an absolute path resulted in the output directory being concatenated in 
 
 ```
 resources/js/generated/home/user/project/resources/types/generated.d.ts
+
 
 ```
 Pass a relative filename instead, and the writer will resolve it correctly against the configured output directory. Thanks @A909M.

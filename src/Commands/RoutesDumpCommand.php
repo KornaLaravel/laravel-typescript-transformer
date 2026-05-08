@@ -24,7 +24,7 @@ class RoutesDumpCommand extends Command
 
         $routeCollection = $resolveRouteCollectionAction->execute(
             includeRouteClosures: $this->option('include-route-closures'),
-            filters: $filters === null ? [] : unserialize($filters)
+            filters: $filters === null ? [] : unserialize(base64_decode($filters))
         );
 
         $this->output->write(serialize($routeCollection));

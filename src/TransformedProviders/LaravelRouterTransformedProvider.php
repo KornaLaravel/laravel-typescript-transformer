@@ -88,7 +88,7 @@ abstract class LaravelRouterTransformedProvider implements TransformedProvider, 
             'php',
             'artisan',
             'typescript:dump-routes',
-            $this->filters ? serialize($this->filters) : 'null',
+            $this->filters ? base64_encode(serialize($this->filters)) : 'null',
             $this->includeRouteClosures ? '--include-route-closures' : '',
         ];
 

@@ -7,9 +7,12 @@ use Illuminate\Support\Collection;
 use Spatie\LaravelData\Contracts\BaseData;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\ClassPropertyProcessors\DataClassPropertyProcessor;
+use Spatie\TypeScriptTransformer\Actions\TranspilePhpStanTypeToTypeScriptNodeAction;
+use Spatie\TypeScriptTransformer\Actions\TranspilePhpTypeNodeToTypeScriptNodeAction;
 use Spatie\TypeScriptTransformer\ClassPropertyProcessors\FixArrayLikeStructuresClassPropertyProcessor;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpClassNode;
 use Spatie\TypeScriptTransformer\Transformers\ClassTransformer;
+use Spatie\TypeScriptTransformer\TypeResolvers\DocTypeResolver;
 
 class DataClassTransformer extends ClassTransformer
 {
@@ -17,8 +20,11 @@ class DataClassTransformer extends ClassTransformer
         protected array $customLazyTypes = [],
         protected array $customDataCollections = [],
         protected bool $nullableAsOptional = false,
+        DocTypeResolver $docTypeResolver = new DocTypeResolver(),
+        TranspilePhpStanTypeToTypeScriptNodeAction $transpilePhpStanTypeToTypeScriptTypeAction = new TranspilePhpStanTypeToTypeScriptNodeAction(),
+        TranspilePhpTypeNodeToTypeScriptNodeAction $transpilePhpTypeNodeToTypeScriptTypeAction = new TranspilePhpTypeNodeToTypeScriptNodeAction(),
     ) {
-        parent::__construct();
+        parent::__construct($docTypeResolver, $transpilePhpStanTypeToTypeScriptTypeAction, $transpilePhpTypeNodeToTypeScriptTypeAction);
     }
 
     protected function shouldTransform(PhpClassNode $phpClassNode): bool

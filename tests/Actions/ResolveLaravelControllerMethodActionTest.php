@@ -4,7 +4,7 @@ use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelTypeScriptTransformer\Actions\ResolveLaravelControllerMethodAction;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomCursorPaginatedDataCollection;
-use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomDataColletion;
+use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomDataCollection;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomPaginatedDataCollection;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\FakeData;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\TypedController;
@@ -64,7 +64,7 @@ it('resolves response types', function (string $method, mixed $expected) {
         [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
     )],
     'custom data collection of data objects' => ['returnsCustomDataCollectionOfDataObjects', new TypeScriptGeneric(
-        TypeScriptReference::referencingPhpClass(CustomDataColletion::class),
+        TypeScriptReference::referencingPhpClass(CustomDataCollection::class),
         [new TypeScriptNumber(), TypeScriptReference::referencingPhpClass(FakeData::class)],
     )],
     'custom paginated collection of data objects' => ['returnsCustomPaginatedDataCollectionOfDataObjects', new TypeScriptGeneric(

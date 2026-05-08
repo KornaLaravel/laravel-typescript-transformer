@@ -75,10 +75,10 @@ class TypedController
         return new DataCollection(FakeData::class, []);
     }
 
-    /** @return CustomDataColletion<int, FakeData> */
-    public function returnsCustomDataCollectionOfDataObjects(): DataCollection
+    /** @return CustomDataCollection<int, FakeData> */
+    public function returnsCustomDataCollectionOfDataObjects(): CustomDataCollection
     {
-        return new CustomDataColletion(FakeData::class, []);
+        return new CustomDataCollection(FakeData::class, []);
     }
 
     /** @return CustomPaginatedDataCollection<int, FakeData> */

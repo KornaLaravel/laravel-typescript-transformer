@@ -10,6 +10,6 @@ use Spatie\LaravelData\DataCollection;
  *
  * @extends DataCollection<TKey, TValue>
  */
-class CustomDataColletion extends DataCollection
+class CustomDataCollection extends DataCollection
 {
 }

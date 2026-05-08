@@ -21,6 +21,9 @@ use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptUnion;
 
 class DataClassPropertyProcessor implements ClassPropertyProcessor
 {
+    /** @var array<class-string<NameMapper>, NameMapper> */
+    protected static array $mappers = [];
+
     protected array $lazyTypes = [
         'Spatie\LaravelData\Lazy',
         'Spatie\LaravelData\Support\Lazy\ClosureLazy',
@@ -124,7 +127,7 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
         }
 
         if (is_string($value) && is_subclass_of($value, NameMapper::class)) {
-            return (new $value())->map($propertyName);
+            return (self::$mappers[$value] ??= new $value())->map($propertyName);
         }
 
         return $value;

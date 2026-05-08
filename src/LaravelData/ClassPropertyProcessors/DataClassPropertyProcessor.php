@@ -81,7 +81,7 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
 
     protected function resolveOutputMappedName(PhpPropertyNode $phpPropertyNode): string|int|null
     {
-        $className = $phpPropertyNode->getDeclaringClass()->reflection->getName();
+        $className = $phpPropertyNode->getDeclaringClass()->getName();
         $propertyName = $phpPropertyNode->getName();
 
         $dataProperty = $this->dataConfig->getDataClass($className)->properties[$propertyName] ?? null;

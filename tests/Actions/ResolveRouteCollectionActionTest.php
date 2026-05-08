@@ -34,6 +34,16 @@ it('can resolve all possible routes', function (Closure $route, Closure $expecta
             expect($routes->closures['Closure(simple)']->methods)->toBe(['GET', 'HEAD']);
         },
     ];
+    yield 'root closure' => [
+        fn (Router $router) => $router->get('/', fn () => 'home'),
+        function (RouteCollection $routes) {
+            expect($routes->controllers)->toBeEmpty();
+            expect($routes->closures)->toHaveCount(1);
+
+            expect($routes->closures['Closure(/)']->url)->toBe('');
+            expect($routes->closures['Closure(/)']->methods)->toBe(['GET', 'HEAD']);
+        },
+    ];
     yield 'controller action' => [
         fn (Router $router) => $router->get('action', [ResourceController::class, 'update']),
         function (RouteCollection $routes) {

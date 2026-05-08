@@ -52,7 +52,7 @@ const routes = {
     "resource.edit": "resource/{resource}/edit",
     "resource.update": "resource/{resource}",
     "resource.destroy": "resource/{resource}",
-    "home": "/",
+    "home": "",
     "pricing": "pricing",
     "blog": "blog",
     "blog.show": "blog/{slug}",

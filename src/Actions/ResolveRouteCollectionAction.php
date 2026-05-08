@@ -117,6 +117,6 @@ class ResolveRouteCollectionAction
 
     protected function resolveUrl(Route $route): string
     {
-        return str_replace('?}', '}', $route->getDomain().$route->uri);
+        return str_replace('?}', '}', $route->getDomain().ltrim($route->uri, '/'));
     }
 }

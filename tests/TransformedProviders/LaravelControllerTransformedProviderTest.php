@@ -84,14 +84,14 @@ it('includes type parameters when action has route parameters', function () {
     expect(transformControllers())->toMatchSnapshot();
 });
 
-function transformControllers(): string
+function transformControllers(array $httpMethods = ['get', 'post', 'put', 'patch', 'delete']): string
 {
     $provider = new LaravelControllerTransformedProvider(
         actionNameResolver: new StrippedActionNameResolver([
             'Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses' => null,
         ]),
         generateSupportAction: new class extends GenerateControllerSupportAction {
-            public function execute(): array
+            public function execute(array $httpMethods = []): array
             {
                 return [
                     new Transformed(
@@ -102,7 +102,8 @@ function transformControllers(): string
                     ),
                 ];
             }
-        }
+        },
+        httpMethodsPriority: $httpMethods,
     );
 
     $provider->setPhpNodeCollection(new PhpNodeCollection());

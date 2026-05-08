@@ -1,9 +1,12 @@
 <?php
 
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+use Spatie\LaravelData\Support\DataConfig;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\CustomLazy;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\DataWithAttributes;
 use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\DataWithClassMapper;
+use Spatie\LaravelTypeScriptTransformer\Tests\FakeClasses\DataWithoutAttributes;
 use Spatie\TypeScriptTransformer\Data\TransformationContext;
 use Spatie\TypeScriptTransformer\Data\WritingContext;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpClassNode;
@@ -45,6 +48,15 @@ it('transforms a data class with a class-level mapper', function () {
 
 it('converts nullable properties to optional when configured', function () {
     $output = renderDataClass(DataWithAttributes::class, nullableAsOptional: true);
+
+    expect($output)->toMatchSnapshot();
+});
+
+it('respects the global name_mapping_strategy.output config', function () {
+    config()->set('data.name_mapping_strategy.output', SnakeCaseMapper::class);
+    app()->forgetInstance(DataConfig::class);
+
+    $output = renderDataClass(DataWithoutAttributes::class);
 
     expect($output)->toMatchSnapshot();
 });

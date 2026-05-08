@@ -8,8 +8,8 @@ use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Mappers\NameMapper;
 use Spatie\LaravelData\Optional;
-use Spatie\LaravelData\Support\DataConfig;
 use Spatie\TypeScriptTransformer\Attributes\Hidden;
+use Spatie\TypeScriptTransformer\PhpNodes\PhpAttributeNode;
 use Spatie\TypeScriptTransformer\PhpNodes\PhpPropertyNode;
 use Spatie\TypeScriptTransformer\References\ClassStringReference;
 use Spatie\TypeScriptTransformer\Transformers\ClassPropertyProcessors\ClassPropertyProcessor;
@@ -21,6 +21,9 @@ use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptUnion;
 
 class DataClassPropertyProcessor implements ClassPropertyProcessor
 {
+    /** @var array<class-string<NameMapper>, NameMapper> */
+    protected static array $mappers = [];
+
     protected array $lazyTypes = [
         'Spatie\LaravelData\Lazy',
         'Spatie\LaravelData\Support\Lazy\ClosureLazy',
@@ -33,7 +36,6 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
     ];
 
     public function __construct(
-        protected DataConfig $dataConfig,
         protected array $customLazyTypes = [],
         protected bool $nullableAsOptional = false,
     ) {
@@ -51,24 +53,11 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
 
         $propertyName = $phpPropertyNode->getName();
 
-        $mapOutputNodes = $phpPropertyNode->getAttributes(MapOutputName::class);
-        $mapNodes = $phpPropertyNode->getAttributes(MapName::class);
+        $outputMapper = $this->resolveOutputMapper($phpPropertyNode);
 
-        if (empty($mapOutputNodes) && empty($mapNodes)) {
-            $classNode = $phpPropertyNode->getDeclaringClass();
-            $mapOutputNodes = $classNode->getAttributes(MapOutputName::class);
-            $mapNodes = $classNode->getAttributes(MapName::class);
-        }
-
-        if (! empty($mapOutputNodes)) {
+        if ($outputMapper !== null) {
             $property->name = new TypeScriptIdentifier(
-                $this->resolveOutputName($mapOutputNodes[0]->getArgument('output'), $propertyName)
-            );
-        }
-
-        if (! empty($mapNodes)) {
-            $property->name = new TypeScriptIdentifier(
-                $this->resolveOutputName($mapNodes[0]->getArgument('output') ?? $mapNodes[0]->getArgument('input'), $propertyName)
+                $this->applyOutputMapper($outputMapper, $propertyName)
             );
         }
 
@@ -99,14 +88,46 @@ class DataClassPropertyProcessor implements ClassPropertyProcessor
         return $property;
     }
 
-    protected function resolveOutputName(mixed $value, string $propertyName): string|int
+    protected function resolveOutputMapper(PhpPropertyNode $phpPropertyNode): mixed
+    {
+        if ($mapper = $this->extractMapperFromAttributes($phpPropertyNode->getAttributes(MapOutputName::class), $phpPropertyNode->getAttributes(MapName::class))) {
+            return $mapper;
+        }
+
+        $classNode = $phpPropertyNode->getDeclaringClass();
+
+        if ($mapper = $this->extractMapperFromAttributes($classNode->getAttributes(MapOutputName::class), $classNode->getAttributes(MapName::class))) {
+            return $mapper;
+        }
+
+        return config('data.name_mapping_strategy.output');
+    }
+
+    /**
+     * @param array<PhpAttributeNode> $mapOutputNodes
+     * @param array<PhpAttributeNode> $mapNodes
+     */
+    protected function extractMapperFromAttributes(array $mapOutputNodes, array $mapNodes): mixed
+    {
+        if (! empty($mapOutputNodes)) {
+            return $mapOutputNodes[0]->getArgument('output');
+        }
+
+        if (! empty($mapNodes)) {
+            return $mapNodes[0]->getArgument('output') ?? $mapNodes[0]->getArgument('input');
+        }
+
+        return null;
+    }
+
+    protected function applyOutputMapper(mixed $value, string $propertyName): string|int
     {
         if ($value instanceof NameMapper) {
             return $value->map($propertyName);
         }
 
-        if (is_string($value) && class_exists($value) && is_subclass_of($value, NameMapper::class)) {
-            return (new $value())->map($propertyName);
+        if (is_string($value) && is_subclass_of($value, NameMapper::class)) {
+            return (self::$mappers[$value] ??= new $value())->map($propertyName);
         }
 
         return $value;

@@ -1,18 +1,18 @@
-export const InvokableController = createActionWithMethods([{ method: 'get', url: 'invokable' }, { method: 'head', url: 'invokable' }])
+export const InvokableController = createActionWithMethods([{ method: 'get', url: 'invokable' }])
 export namespace InvokableController {
 export type Request = object;
 export type Response = object;
 }
 export const ResourceController = {
-index: createActionWithMethods([{ method: 'get', url: 'resource' }, { method: 'head', url: 'resource' }]),
-create: createActionWithMethods([{ method: 'get', url: 'resource/create' }, { method: 'head', url: 'resource/create' }]),
+index: createActionWithMethods([{ method: 'get', url: 'resource' }]),
+create: createActionWithMethods([{ method: 'get', url: 'resource/create' }]),
 store: createActionWithMethods([{ method: 'post', url: 'resource' }]),
 show: createActionWithMethods<{
 resource: string | number,
-}>([{ method: 'get', url: 'resource/{resource}' }, { method: 'head', url: 'resource/{resource}' }]),
+}>([{ method: 'get', url: 'resource/{resource}' }]),
 edit: createActionWithMethods<{
 resource: string | number,
-}>([{ method: 'get', url: 'resource/{resource}/edit' }, { method: 'head', url: 'resource/{resource}/edit' }]),
+}>([{ method: 'get', url: 'resource/{resource}/edit' }]),
 update: createActionWithMethods<{
 resource: string | number,
 }>([{ method: 'put', url: 'resource/{resource}' }, { method: 'patch', url: 'resource/{resource}' }]),

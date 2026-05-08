@@ -2,6 +2,7 @@
 
 namespace Spatie\LaravelTypeScriptTransformer\Actions;
 
+use InvalidArgumentException;
 use Spatie\LaravelTypeScriptTransformer\References\LaravelControllerReference;
 use Spatie\TypeScriptTransformer\Transformed\Transformed;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptAlias;
@@ -14,6 +15,7 @@ use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptGeneric;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptGenericTypeParameter;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptIdentifier;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptIntersection;
+use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptLiteral;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptMappedType;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptNull;
 use Spatie\TypeScriptTransformer\TypeScriptNodes\TypeScriptNumber;
@@ -31,12 +33,25 @@ class GenerateControllerSupportAction
     /** @var ?array<Transformed> */
     protected static ?array $cachedSupport = null;
 
-    /** @return array<Transformed> */
-    public function execute(): array
+    /**
+     * @param array<int, string> $httpMethods
+     *
+     * @return array<Transformed>
+     */
+    public function execute(array $httpMethods = ['get', 'post', 'put', 'patch', 'delete']): array
     {
+        if (empty($httpMethods)) {
+            throw new InvalidArgumentException('At least one HTTP method must be configured.');
+        }
+
         if (static::$cachedSupport !== null) {
             return static::$cachedSupport;
         }
+
+        $methodType = new TypeScriptUnion(array_map(
+            fn (string $method) => new TypeScriptLiteral(strtolower($method)),
+            $httpMethods,
+        ));
 
         return static::$cachedSupport = [
             new Transformed(
@@ -57,7 +72,7 @@ class GenerateControllerSupportAction
                     'RouteDefinition',
                     new TypeScriptObject([
                         new TypeScriptProperty('url', new TypeScriptString()),
-                        new TypeScriptProperty('method', new TypeScriptString()),
+                        new TypeScriptProperty('method', $methodType),
                     ])
                 ),
                 LaravelControllerReference::supportItem('RouteDefinition'),
@@ -106,7 +121,7 @@ class GenerateControllerSupportAction
                 new TypeScriptAlias(
                     'MethodRoute',
                     new TypeScriptObject([
-                        new TypeScriptProperty('method', new TypeScriptString()),
+                        new TypeScriptProperty('method', $methodType),
                         new TypeScriptProperty('url', new TypeScriptString()),
                     ])
                 ),

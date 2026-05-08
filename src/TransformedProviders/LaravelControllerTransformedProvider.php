@@ -2,7 +2,6 @@
 
 namespace Spatie\LaravelTypeScriptTransformer\TransformedProviders;
 
-use Illuminate\Support\Arr;
 use Spatie\LaravelTypeScriptTransformer\ActionNameResolvers\ActionNameResolver;
 use Spatie\LaravelTypeScriptTransformer\ActionNameResolvers\DefaultActionNameResolver;
 use Spatie\LaravelTypeScriptTransformer\Actions\GenerateControllerSupportAction;
@@ -53,6 +52,7 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
     /**
      * @param array<RouteFilter> $filters
      * @param array<string>|null $routeDirectories
+     * @param array<int, string> $httpMethodsPriority
      */
     public function __construct(
         protected string $location = 'controllers',
@@ -62,7 +62,10 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
         ?array $routeDirectories = null,
         protected LaravelControllersCollection $controllersCollection = new LaravelControllersCollection(),
         protected GenerateControllerSupportAction $generateSupportAction = new GenerateControllerSupportAction(),
+        protected array $httpMethodsPriority = ['get', 'post', 'put', 'patch', 'delete'],
     ) {
+        $this->httpMethodsPriority = array_map('strtolower', $this->httpMethodsPriority);
+
         parent::__construct(
             resolveRouteCollectionAction: $resolveRouteCollectionAction,
             includeRouteClosures: false,
@@ -89,7 +92,7 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
     /** @return array<Transformed> */
     protected function resolveSupport(): array
     {
-        return $this->generateSupportAction->execute();
+        return $this->generateSupportAction->execute($this->httpMethodsPriority);
     }
 
     /** @return array<Transformed> */
@@ -231,22 +234,10 @@ class LaravelControllerTransformedProvider extends LaravelRouterTransformedProvi
 
     protected function buildActionCallNode(RouteControllerAction $action): TypeScriptNode
     {
-        $methodPriorities = [
-            'get' => 0,
-            'post' => 1,
-            'put' => 2,
-            'patch' => 3,
-            'delete' => 4,
-            'head' => 5,
-            'options' => 6,
-        ];
-
-        $methods = array_map(
-            fn (string $method) => strtolower($method),
-            $action->methods,
-        );
-
-        $methods = Arr::sort($methods, fn (string $method) => $methodPriorities[$method]);
+        $methods = array_values(array_intersect(
+            $this->httpMethodsPriority,
+            array_map('strtolower', $action->methods),
+        ));
 
         $methodRoutes = new TypeScriptArrayExpression(array_map(
             fn (string $method) => new TypeScriptRaw("{ method: '{$method}', url: '{$action->url}' }"),

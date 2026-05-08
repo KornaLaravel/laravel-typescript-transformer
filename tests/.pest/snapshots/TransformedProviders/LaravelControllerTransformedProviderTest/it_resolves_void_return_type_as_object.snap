@@ -1,5 +1,5 @@
 export const TypedController = {
-returnsVoid: createActionWithMethods([{ method: 'get', url: 'void' }, { method: 'head', url: 'void' }]),
+returnsVoid: createActionWithMethods([{ method: 'get', url: 'void' }]),
 } as const
 export namespace TypedController {
 export namespace returnsVoid {

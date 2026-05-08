@@ -1,5 +1,5 @@
 export const TypedController = {
-returnsPhpType: createActionWithMethods([{ method: 'get', url: 'typed' }, { method: 'head', url: 'typed' }]),
+returnsPhpType: createActionWithMethods([{ method: 'get', url: 'typed' }]),
 } as const
 export namespace TypedController {
 export namespace returnsPhpType {
